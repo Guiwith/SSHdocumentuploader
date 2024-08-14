@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DM Document Uploader</title>
+    <style>
+        body {
+            background-color: #f5f6fa;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.1);
+            width: 1000px;
+            max-width: 100%;
+        }
+        h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .btn-group .left {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn.red {
+            background-color: #dc3545;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn.red:hover {
+            background-color: #c82333;
+        }
+        .file-list {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .file-list th, .file-list td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+            font-size: 14px;
+            color: #333;
+        }
+        .file-list th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .file-list tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .pagination .page-info {
+            font-size: 14px;
+            color: #333;
+        }
+        .pagination .page-links {
+            display: flex;
+            gap: 10px;
+        }
+        .pagination .page-links a {
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            color: #007bff;
+        }
+        .pagination .page-links a:hover {
+            background-color: #e9ecef;
+        }
+        .pagination .page-links .current {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DM Document Uploader</h1>
+        <div class="btn-group">
+            <div class="left">
+                <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" style="display: inline-block;">
+                    <input type="file" name="file" id="file-input" style="display:none;" onchange="this.form.submit()">
+                    <label for="file-input" class="btn">上传文件</label>
+                </form>
+            </div>
+            <div class="right">
+                <form action="{{ url_for('index') }}" method="get">
+                    <input type="text" name="search" value="{{ search_query or '' }}" placeholder="搜索文件" style="padding: 8px; border-radius: 4px; border: 1px solid #dee2e6;">
+                    <button type="submit" class="btn grey">搜索</button>
+                </form>
+            </div>
+        </div>
+        <table class="file-list">
+            <thead>
+                <tr>
+                    <th>文件名称</th>
+                    <th>字符数</th>
+                    <th>更新时间</th>
+                    <th>启用状态</th>
+                    <th>操作</th> <!-- 增加一个操作列 -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                <tr>
+                    <td><a href="{{ url_for('edit_file', filename=file.name) }}">{{ file.name }}</a></td>
+                    <td>{{ file.size }} 字符</td>
+                    <td>{{ file.updated | datetimeformat }}</td>
+                    <td><a href="{{ url_for('toggle_enable', filename=file.name) }}">{{ '启用' if file.enabled else '禁用' }}</a></td>
+                    <td><a href="{{ url_for('delete_file', filename=file.name) }}" class="btn red">删除</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination">
+            <div class="page-info">
+                共{{ total_files }}条
+            </div>
+            <div class="page-links">
+                {% for p in range(1, (total_files//10) + 2) %}
+                <a href="{{ url_for('index', page=p, search=search_query) }}" class="{{ 'current' if p == page else '' }}">{{ p }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
